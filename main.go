@@ -13,13 +13,13 @@ type MessariResponse struct {
 		Name string `json:"name"`
 		Symbol string `json:"symbol"`
 		Slug string `json:"slug"`
-		MarketData struct {
+		MktData struct {
 			Price float64 `json:"price_usd"`
 			Pct1H float64 `json:"percent_change_usd_last_1_hour"`
 			Pct24H float64 `json:"percent_change_usd_last_24_hours"`
 		} `json:"market_data"`
-		Marketcap struct {
-			Mktcap float64 `json:"current_marketcap_usd"`
+		Mktcap struct {
+			Marketcap float64 `json:"current_marketcap_usd"`
 		} `json:"marketcap"`
 		RoiData struct {
 			Pct1W float64 `json:"percent_change_last_1_week"`
@@ -30,6 +30,11 @@ type MessariResponse struct {
 	} `json:"data"`
 }
 
+const (
+	def = "\033[0m"
+	neg = "\033[1m\033[31m"
+	pos = "\033[1m\033[32m"
+)
 var self = ""
 
 func main() {
@@ -62,13 +67,23 @@ func main() {
 			}
 			continue
 		}
-		var messariRes MessariResponse
+		var m MessariResponse
 		dec := json.NewDecoder(res.Body)
-		err = dec.Decode(&messariRes)
+		err = dec.Decode(&m)
 		if err != nil {
 			fmt.Println("Invalid JSON response")
 		} else {
-			fmt.Printf("%16s: USD %7.4f\n", messariRes.Data.Name + " " + messariRes.Data.Symbol, messariRes.Data.MarketData.Price)
+			pct := [6]float64{m.MktData.Pct1H, m.MktData.Pct24H, m.RoiData.Pct1W, m.RoiData.Pct1M, m.RoiData.Pct3M, m.RoiData.Pct1Y}
+			change := ""
+			for i := 0; i < 6; i++ {
+				p := pct[i]
+				if p < 0 {
+					change += neg + fmt.Sprintf(" %3f", p)
+				} else {
+					change += pos + fmt.Sprintf(" %3f", p)
+				}
+			}
+			fmt.Printf("%16s: USD %11.5f\n", m.Data.Name + " " + m.Data.Symbol, m.Data.MktData.Price, change + def)
 		}
 	}
 }
