@@ -8,20 +8,32 @@ import (
 	"strings"
 )
 
-// status.timestamp data.name data.symbol data.market_data.price_usd data.market_data.percent_change_usd_last_1_hour data.market_data.percent_change_usd_last_24_hours data.marketcap.current_marketcap_usd data.roi_data.percent_change_last_1_week data.roi_data.percent_change_last_1_month data.roi_data.percent_change_last_3_months data.roi_data.percent_change_last_1_year
 type MessariResponse struct {
 	Data struct {
 		Name string `json:"name"`
 		Symbol string `json:"symbol"`
+		Slug string `json:"slug"`
 		MarketData struct {
-			PriceUsd float64 `json:"price_usd"`
+			Price float64 `json:"price_usd"`
+			Pct1H float64 `json:"percent_change_usd_last_1_hour"`
+			Pct24H float64 `json:"percent_change_usd_last_24_hours"`
 		} `json:"market_data"`
+		Marketcap struct {
+			Mktcap float64 `json:"current_marketcap_usd"`
+		} `json:"marketcap"`
+		RoiData struct {
+			Pct1W float64 `json:"percent_change_last_1_week"`
+			Pct1M float64 `json:"percent_change_last_1_month"`
+			Pct3M float64 `json:"percent_change_last_3_months"`
+			Pct1Y float64 `json:"percent_change_last_1_year"`
+		} `json:"roi_data"`
 	} `json:"data"`
 }
 
 var self = ""
 
 func main() {
+	apikey := os.Getenv("CPRICE_API")
 	for _, arg := range os.Args {
 		if self == "" { // Get binary name (arg0)
 			selves := strings.Split(arg, "/")
@@ -31,7 +43,9 @@ func main() {
 		//res, err := http.Get("https://data.messari.io/api/v1/assets/" + cryptoName + "/metrics?fields=name,symbol,slug,market_data/price_usd")
 		client := &http.Client{}
 		req, err := http.NewRequest("GET", "https://data.messari.io/api/v1/assets/" + arg + "/metrics", nil)
-		req.Header.Add("x-messari-api-key", "2a0a30cc-0bac-4b2b-ab74-670f1beff880")
+		if apikey != "" {
+			req.Header.Add("x-messari-api-key", apikey)
+		}
 		res, err := client.Do(req)
 		if err != nil {
 			fmt.Println("Could not reach server")
@@ -54,7 +68,7 @@ func main() {
 		if err != nil {
 			fmt.Println("Invalid JSON response")
 		} else {
-			fmt.Printf("%s %s: USD %0.10f\n", messariRes.Data.Name, messariRes.Data.Symbol, messariRes.Data.MarketData.PriceUsd)
+			fmt.Printf("%16s: USD %7.4f\n", messariRes.Data.Name + " " + messariRes.Data.Symbol, messariRes.Data.MarketData.Price)
 		}
 	}
 }
