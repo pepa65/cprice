@@ -1,3 +1,3 @@
-module github.com/parkerdouglass/crypto-prices
+module github.com/pepa65/cprice
 
-go 1.17
+go 1.16

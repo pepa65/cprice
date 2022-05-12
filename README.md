@@ -1,15 +1,4 @@
-# crypto-prices
+# cprice
+**CLI to access cryptocoin data online**
 
-Command-line tool for fetching cryptocurrency prices.
-
-## Example usage
-
-```sh
-crypto-prices -c btc
-```
-
-Output:
-
-```
-btc price is $54080.73097534
-```
+* Usage: `cprice eth`
