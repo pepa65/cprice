@@ -8,8 +8,8 @@ import (
 	"strings"
 )
 
-type MessariResponse struct {
-	Data struct {
+type MessariJson struct {
+	D struct {
 		Name string `json:"name"`
 		Symbol string `json:"symbol"`
 		Slug string `json:"slug"`
@@ -31,11 +31,18 @@ type MessariResponse struct {
 }
 
 const (
-	def = "\033[0m"
-	neg = "\033[1m\033[31m"
-	pos = "\033[1m\033[32m"
+	version = "0.1.2"
+	def     = "\033[0m"
+	cya     = "\033[1m\033[36m"
+	red     = "\033[1m\033[31m"
+	gre     = "\033[1m\033[32m"
 )
 var self = ""
+
+func usage() {
+	fmt.Printf("%s%s v%s%s - CLI to access cryptocoin data online\n", gre, self, version, def)
+	fmt.Printf("Usage:  %s%s <cryptcurrency>...\n", cya, self)
+}
 
 func main() {
 	apikey := os.Getenv("CPRICE_API")
@@ -43,9 +50,13 @@ func main() {
 		if self == "" { // Get binary name (arg0)
 			selves := strings.Split(arg, "/")
 			self = selves[len(selves)-1]
+			if len(os.Args) == 1 {
+				usage()
+				return
+			}
+			fmt.Println(cya + "            Name Symbol    Value USD    1h  1d  1w  1m  3m  1y  Marketcap" + def)
 			continue
 		}
-		//res, err := http.Get("https://data.messari.io/api/v1/assets/" + cryptoName + "/metrics?fields=name,symbol,slug,market_data/price_usd")
 		client := &http.Client{}
 		req, err := http.NewRequest("GET", "https://data.messari.io/api/v1/assets/" + arg + "/metrics", nil)
 		if apikey != "" {
@@ -53,37 +64,50 @@ func main() {
 		}
 		res, err := client.Do(req)
 		if err != nil {
-			fmt.Println("Could not reach server")
+			fmt.Println(red + "Could not reach server" + def)
+			return
 		}
 		defer res.Body.Close()
 		if res.StatusCode == 404 {
-			fmt.Printf("Unsupported cryptocurrency: %s\n", arg)
+			fmt.Printf("%sUnsupported cryptocurrency: %s%s\n", red, def, arg)
 			continue
 		} else if res.StatusCode < 200 || res.StatusCode > 299 {
-			fmt.Printf("API returned status code: %d\n", res.StatusCode)
+			fmt.Printf("%sAPI returned status code: %s%d\n", red, def, res.StatusCode)
 			if res.StatusCode == 429 {
-				fmt.Println("Too many API requests to messari.io")
+				fmt.Println(red + "Too many API requests to messari.io" + def)
 				return
 			}
 			continue
 		}
-		var m MessariResponse
+		var m MessariJson
 		dec := json.NewDecoder(res.Body)
 		err = dec.Decode(&m)
 		if err != nil {
-			fmt.Println("Invalid JSON response")
-		} else {
-			pct := [6]float64{m.MktData.Pct1H, m.MktData.Pct24H, m.RoiData.Pct1W, m.RoiData.Pct1M, m.RoiData.Pct3M, m.RoiData.Pct1Y}
-			change := ""
-			for i := 0; i < 6; i++ {
-				p := pct[i]
-				if p < 0 {
-					change += neg + fmt.Sprintf(" %3f", p)
-				} else {
-					change += pos + fmt.Sprintf(" %3f", p)
-				}
-			}
-			fmt.Printf("%16s: USD %11.5f\n", m.Data.Name + " " + m.Data.Symbol, m.Data.MktData.Price, change + def)
+			fmt.Println(red + "Invalid JSON response" +def)
+			continue
 		}
+		u := m.D.MktData.Price
+		if u == 0 {
+			fmt.Printf("%sNo value recorded for %s%s\n", red, def, arg)
+			continue
+		}
+		pct := [6]float64{
+			m.D.MktData.Pct1H,
+			m.D.MktData.Pct24H,
+			m.D.RoiData.Pct1W,
+			m.D.RoiData.Pct1M,
+			m.D.RoiData.Pct3M,
+			m.D.RoiData.Pct1Y,
+		}
+		change := ""
+		for i := 0; i < 6; i++ {
+			p := pct[i]
+			if p < 0 {
+				change += red + fmt.Sprintf(" %3.0f", -p)
+			} else {
+				change += gre + fmt.Sprintf(" %3.0f", p)
+			}
+		}
+		fmt.Printf("%23s:  %11.5f %s  %.4e\n", m.D.Name + " " + m.D.Symbol, u, change + def, m.D.Mktcap.Marketcap)
 	}
 }
