@@ -1,4 +1,5 @@
 # cprice
 **CLI to access cryptocoin data online**
 
-* Usage: `cprice eth`
+* Usage: `cprice <cryptcurrency> ...`
+* Example: `cprice btc eth`
