@@ -31,21 +31,24 @@ type MessariJson struct {
 }
 
 const (
-	version = "0.1.2"
+	version = "0.1.3"
 	def     = "\033[0m"
 	cya     = "\033[1m\033[36m"
 	red     = "\033[1m\033[31m"
 	gre     = "\033[1m\033[32m"
 )
-var self = ""
+var (
+	self = ""
+	apikey = os.Getenv("CPRICE_API")
+)
 
 func usage() {
 	fmt.Printf("%s%s v%s%s - CLI to access cryptocoin data online\n", gre, self, version, def)
-	fmt.Printf("Usage:  %s%s <cryptcurrency>...\n", cya, self)
+	fmt.Printf("Usage:  %s%s <cryptcurrency>...%s\n", cya, self, def)
+	fmt.Printf("messari.io API key: %sCPRICE_API%s=\"%s%s%s\"\n", cya, def, gre, apikey, def)
 }
 
 func main() {
-	apikey := os.Getenv("CPRICE_API")
 	for _, arg := range os.Args {
 		if self == "" { // Get binary name (arg0)
 			selves := strings.Split(arg, "/")
@@ -54,6 +57,7 @@ func main() {
 				usage()
 				return
 			}
+			fmt.Printf("messari.io API key: %sCPRICE_API%s=\"%s%s%s\"\n", cya, def, gre, apikey, def)
 			fmt.Println(cya + "            Name Symbol    Value USD    1h  1d  1w  1m  3m  1y  Marketcap" + def)
 			continue
 		}
