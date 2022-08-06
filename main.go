@@ -57,8 +57,7 @@ func main() {
 				usage()
 				return
 			}
-			fmt.Printf("messari.io API key: %sCPRICE_API%s=\"%s%s%s\"\n", cya, def, gre, apikey, def)
-			fmt.Println(cya + "            Name Symbol    Value USD    1h  1d  1w  1m  3m  1y  Marketcap" + def)
+			fmt.Println(cya + "          Name / Symbol     USD Value   1h  1d  1w  1m  3m  1y  Marketcap" + def)
 			continue
 		}
 		client := &http.Client{}
@@ -112,6 +111,6 @@ func main() {
 				change += gre + fmt.Sprintf(" %3.0f", p)
 			}
 		}
-		fmt.Printf("%23s:  %11.5f %s  %.4e\n", m.D.Name + " " + m.D.Symbol, u, change + def, m.D.Mktcap.Marketcap)
+		fmt.Printf("%23s:  %11.5f %s  %.3e\n", m.D.Name + " " + m.D.Symbol, u, change + def, m.D.Mktcap.Marketcap)
 	}
 }
