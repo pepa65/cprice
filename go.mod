@@ -1,3 +1,3 @@
 module github.com/pepa65/cprice
 
-go 1.13
+go 1.20

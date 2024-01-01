@@ -7,11 +7,11 @@ building:
   stage: build
   script:
     - go install github.com/pepa65/cprice@latest
-    - GOOS=linux GOARCH=amd64 go build -ldflags="-s -w"
-    - GOOS=linux GOARCH=arm go build -ldflags="-s -w" -o cprice_pi
-    - GOOS=freebsd GOARCH=amd64 go build -ldflags="-s -w" -o cprice_bsd
-    - GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o cprice_osx
-    - GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o cprice.exe
+    - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w"
+    - CGO_ENABLED=0 GOOS=linux GOARCH=arm go build -ldflags="-s -w" -o cprice_pi
+    - CGO_ENABLED=0 GOOS=freebsd GOARCH=amd64 go build -ldflags="-s -w" -o cprice_bsd
+    - CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o cprice_osx
+    - CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o cprice.exe
   artifacts:
     name: cprice
     paths:
